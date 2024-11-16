@@ -61,3 +61,21 @@ def create_student():
         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
             # unique constraint violation
             return {"message": "Email address already in use"}, 409
+        
+# Delete - /students/id - DELETE
+@students_bp.route("/<int:student_id>", methods=["DELETE"])
+def delete_student(student_id):
+    # find the student to be deleted using id
+    stmt = db.select(Student).filter_by(id=student_id)
+    student = db.session.scalar(stmt)
+    # if student exists
+    if student:
+        # delete
+        db.session.delete(student)
+        db.session.commit()
+        # return some response
+        return {"message": f"Student '{student.name}' deleted successfully"}
+    # else
+    else:
+        # return some error response
+        return {"message": f"Student with id {student_id} does not exist"}, 404
