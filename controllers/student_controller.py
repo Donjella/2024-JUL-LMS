@@ -79,3 +79,31 @@ def delete_student(student_id):
     else:
         # return some error response
         return {"message": f"Student with id {student_id} does not exist"}, 404
+
+# Update - /students/id - PUT, PATCH
+@students_bp.route("/<int:student_id>", methods=["PUT", "PATCH"])
+def update_student(student_id):
+    try:
+        # find student with id you want to update
+        stmt = db.select(Student).filter_by(id=student_id)
+        student = db.session.scalar(stmt)
+        # get the data to be updated from the request body
+        body_data = request.get_json()
+        # if student exists
+        if student:
+            # update the student data
+            student.name = body_data.get("name") or student.name
+            student.email = body_data.get("email") or student.email
+            student.address = body_data.get("address") or student.address
+            # commit changes
+            db.session.commit()
+            # return updated data
+            return student_schema.dump(student)
+            # return updated data
+        # else
+        else:
+            # return error message
+            return {"message": f"Student with id {student_id} does not exist"}, 404
+    
+    except IntegrityError:
+        return {"message": "Email address already in use"}, 409
