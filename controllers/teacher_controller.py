@@ -17,10 +17,22 @@ teachers_bp = Blueprint("teachers", __name__, url_prefix="/teachers")
 # Read all - /teachers - GET
 @teachers_bp.route("/")
 def get_teachers():
-    stmt = db.select(Teacher)
+    department = request.args.get("department")
+    if department:
+        stmt = db.select(Teacher).filter_by(department=department)
+    else:
+        stmt = db.select(Teacher)
     teachers_list = db.session.scalars(stmt)
     data = teachers_schema.dump(teachers_list) # handle a list of teachers, hence plural
     return data
+
+# # Read all from a single department - /teachers?department=__ - GET
+# @teachers_bp.route("/")
+# def get_teachers_from_department():
+#     department = request.args.get("department")
+#     stmt = db.select(Teacher).filter_by(department=department) # first one is name of the column, second one is the value, a variable named department
+#     teachers = db.session.scalars(stmt)
+#     return teachers_schema.dump(teachers)
 
 
 # Read one - /teachers/id - GET
