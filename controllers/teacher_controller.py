@@ -19,21 +19,12 @@ teachers_bp = Blueprint("teachers", __name__, url_prefix="/teachers")
 def get_teachers():
     department = request.args.get("department")
     if department:
-        stmt = db.select(Teacher).filter_by(department=department) # first one is name of the column, second one is the value, a variable named department
-#     teachers = db.session.scalars(stmt)
+        stmt = db.select(Teacher).filter_by(department=department)
     else:
-        stmt = db.select(Teacher)
+        stmt = db.select(Teacher).order_by(Teacher.id)
     teachers_list = db.session.scalars(stmt)
-    data = teachers_schema.dump(teachers_list) # handle a list of teachers, hence plural
+    data = teachers_schema.dump(teachers_list)
     return data
-
-# Merged the below to the above
-# # Read all from a single department - /teachers?department=__ - GET
-# @teachers_bp.route("/")
-# def get_teachers_from_department():
-#     department = request.args.get("department")
-#     stmt = db.select(Teacher).filter_by(department=department) 
-#     return teachers_schema.dump(teachers)
 
 
 # Read one - /teachers/id - GET
@@ -64,8 +55,9 @@ def create_teacher():
     
     except IntegrityError as err:
         if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
-            return {"message": f"The '{err.orig.diag.column_name}' is required"}, 409 # diagnostic diag.column_name to know it is due from column name see: https://www.psycopg.org/docs/extensions.html#psycopg2.extensions.Diagnostics
-        
+            return {"message": f"The '{err.orig.diag.column_name}' is required"}, 409
+
+
 # Delete - /teachers/id - DELETE
 @teachers_bp.route("/<int:teacher_id>", methods=["DELETE"])
 def delete_teacher(teacher_id):
@@ -74,6 +66,30 @@ def delete_teacher(teacher_id):
     if teacher:
         db.session.delete(teacher)
         db.session.commit()
-        return {"message": f"Teacher '{teacher.name}' delete successfully"}
+        return {"message": f"Teacher '{teacher.name}' deleted successfuly"}
     else:
+        return {"message": f"Teacher with id {teacher_id} does not exist"}, 404
+
+
+# Update - /teachers/id - PUT, PATCH
+@teachers_bp.route("/<int:teacher_id>", methods=["PUT", "PATCH"])
+def update_teacher(teacher_id):
+    # find the teacher with that id from the db
+    stmt = db.select(Teacher).filter_by(id=teacher_id)
+    teacher = db.session.scalar(stmt)
+    # get the data to be updated - receive from request body
+    body_data = request.get_json()
+    # if teacher exists
+    if teacher:
+        # update the attributes
+        teacher.name = body_data.get("name") or teacher.name
+        teacher.address = body_data.get("address") or teacher.address
+        teacher.department = body_data.get("department") or teacher.department
+        # commit
+        db.session.commit()
+        # return a response
+        return teacher_schema.dump(teacher)
+    # else
+    else:
+        # return an error response
         return {"message": f"Teacher with id {teacher_id} does not exist"}, 404
