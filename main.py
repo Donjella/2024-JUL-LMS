@@ -1,11 +1,15 @@
-import os
+# Importing built-in modules (no installation needed)
+import os 
 
+# Importing third-party libraries (require installation via pip)
 from flask import Flask
 
+# Importing internal modules/files (created within the project)
 from init import db, ma
 from controllers.cli_controller import db_commands
 from controllers.student_controller import students_bp
 from controllers.teacher_controller import teachers_bp
+from controllers.course_controller import courses_bp
 
 
 def create_app():
@@ -19,5 +23,7 @@ def create_app():
     app.register_blueprint(db_commands)
     app.register_blueprint(students_bp)
     app.register_blueprint(teachers_bp)
+    app.register_blueprint(courses_bp)
+
 
     return app
