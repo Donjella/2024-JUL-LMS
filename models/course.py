@@ -32,6 +32,5 @@ class CourseSchema(ma.Schema):
     class Meta:
         fields = ("id", "name", "duration", "teacher_id", "teacher")
 
-
 course_schema = CourseSchema()
 courses_schema = CourseSchema(many=True)
