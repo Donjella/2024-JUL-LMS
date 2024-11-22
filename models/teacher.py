@@ -31,11 +31,9 @@ class Teacher(db.Model):
 # ]
 
 class TeacherSchema(ma.Schema):
-    courses = fields.List(fields.Nested("CourseSchema", exclude=["teacher"])) # it needs to add .List as it's a list of nested fields since a teacher can teacher many courses
-
+    courses = fields.List(fields.Nested("CourseSchema", exclude=["teacher"]))
     class Meta:
         fields = ("id", "name", "department", "address", "courses")
-
 
 teacher_schema = TeacherSchema()
 teachers_schema = TeacherSchema(many=True)
