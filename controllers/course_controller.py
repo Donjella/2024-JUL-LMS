@@ -1,4 +1,6 @@
-from flask import Blueprint
+from flask import Blueprint, request
+from sqlalchemy.exc import IntegrityError
+from psycopg2 import errorcodes
 
 from init import db
 from models.course import Course, courses_schema, course_schema
@@ -24,3 +26,25 @@ def get_course(course_id):
         return course_schema.dump(course)
     else:
         return {"message": f"Course with id {course_id} does not exist"}, 404
+    
+# Create
+@courses_bp.route("/", methods=["POST"])
+def create_course():
+    try:
+        # get the data from the request body
+        body_data = request.get_json()
+        # create a course instance, it must match values with body (JSON) in Inmsonia create post method for create course
+        course = Course (
+            name=body_data.get("name"),
+            duration=body_data.get("duration"),
+            teacher_id=body_data.get("teacher_id")
+        )
+        # add to session and commit
+        db.session.add(course)
+        db.session.commit()
+        return course_schema.dump(course), 201
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.NOT_NULL_VIOLATION:
+            return {"message": "The name cannot be null"}, 409
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
+            return {"message": "Duplicate name"}, 409
