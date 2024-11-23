@@ -31,6 +31,7 @@ class Teacher(db.Model):
 # ]
 
 class TeacherSchema(ma.Schema):
+    order = True
     courses = fields.List(fields.Nested("CourseSchema", exclude=["teacher"]))
     class Meta:
         fields = ("id", "name", "department", "address", "courses")

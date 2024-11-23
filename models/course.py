@@ -29,7 +29,6 @@ class Course(db.Model):
 class CourseSchema(ma.Schema):
     ordered = True  # Ensure serialization order
     teacher = fields.Nested("TeacherSchema", only=["name", "department"])  # Specify nested fields
-
     class Meta:
         fields = ("id", "name", "duration", "teacher_id", "teacher")  # Explicitly define field order
 
