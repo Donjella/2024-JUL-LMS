@@ -4,6 +4,7 @@ from init import db
 from models.student import Student
 from models.teacher import Teacher
 from models.course import Course
+from models.enrolment import Enrolment
 
 db_commands = Blueprint("db", __name__)
 
@@ -79,6 +80,26 @@ def seed_tables():
     ]
 
     db.session.add_all(courses)
+
+    enrolments = [
+        Enrolment(
+            enrolment_date="2024-11-23",
+            course=courses[0],
+            student=students[0]
+        ),
+        Enrolment(
+            enrolment_date="2022-10-20",
+            course=courses[1],
+            student=students[0]
+        ),
+        Enrolment(
+            enrolment_date="2023-05-07",
+            course=courses[0],
+            student=students[1]
+        )
+    ]
+
+    db.session.add_all(enrolments)
 
     db.session.commit()
 
