@@ -11,10 +11,9 @@ class Course(db.Model):
     duration = db.Column(db.Float)
     teacher_id = db.Column(db.Integer, db.ForeignKey("teachers.id"))
 
-# instead of returning just teacher's id, we can return the whole object using below:
-# "Teacher" = teacher model. so in teacher model we need to define the courses field
-# "teacher" needs to be included in CourseSchema's field
     teacher = db.relationship("Teacher", back_populates="courses")
+
+    enrolments = db.relationship("Enrolment", back_populates="course", cascade="all, delete")
 
 # id: 1,
 # name: "Course 1",
@@ -24,13 +23,29 @@ class Course(db.Model):
 #   id: 1,
 #   name: "Teacher 1",
 #   department: "Engineering"
+# },
+# enrolments: [
+# {
+#   id: 1,
+#   enrolment_date: "2022-10-20",
+#   student_id: 1,
+#   course_id: 2,
+# },
+# {
+#   id: 2,
+#   enrolment_date: "2024-08-20",
+#   student_id: 2,
+#   course_id: 1,
 # }
+# ]
+
 
 class CourseSchema(ma.Schema):
-    ordered = True  # Ensure serialization order
-    teacher = fields.Nested("TeacherSchema", only=["name", "department"])  # Specify nested fields
+    ordered=True
+    teacher = fields.Nested("TeacherSchema", only=["name", "department"])
+    enrolments = fields.List(fields.Nested("EnrolmentSchema", exclude=["course"]))
     class Meta:
-        fields = ("id", "name", "duration", "teacher_id", "teacher")  # Explicitly define field order
+        fields = ("id", "name", "duration", "teacher_id", "teacher", "enrolments")
 
 
 course_schema = CourseSchema()
