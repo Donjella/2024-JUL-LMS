@@ -48,3 +48,22 @@ def create_enrolment():
             return {"message": f"{err.orig.diag.column_name} is required"}, 409
         if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
             return {"message": err.orig.diag.message_detail}, 409
+        
+# Delete
+@enrolments_bp.route("/<int:enrolment_id>", methods=["DELETE"])
+def delete_enrolment(enrolment_id):
+    # find the enrolment with that id
+    stmt = db.select(Enrolment).filter_by(id=enrolment_id)
+    enrolment = db.session.scalar(stmt)
+    # if enrolment exists
+    if enrolment:
+        # delete it
+        db.session.delete(enrolment)
+        # commit
+        db.session.commit()
+        # return a response
+        return {"message": f"Student '{enrolment.student_id}' removed from course '{enrolment.course_id}'"}
+    # else
+    else:
+        # return an error response
+        return {"message": f"Enrolment with id {enrolment_id} doesn't exist"}, 404
