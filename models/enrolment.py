@@ -5,6 +5,9 @@ from init import db, ma
 
 class Enrolment(db.Model):
     __tablename__ = "enrolments"
+    __table_args__ = (
+        db.UniqueConstraint("student_id", "course_id", name="unique_student_course"),
+    ) # trailing comma after round bracket to make this a tuple
 
     id = db.Column(db.Integer, primary_key=True)
     enrolment_date = db.Column(db.Date)
