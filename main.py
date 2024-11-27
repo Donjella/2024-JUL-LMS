@@ -3,6 +3,7 @@ import os
 
 # Importing third-party libraries (require installation via pip)
 from flask import Flask
+from marshmallow.exceptions import ValidationError
 
 # Importing internal modules/files (created within the project)
 from init import db, ma
@@ -20,6 +21,10 @@ def create_app():
 
     db.init_app(app)
     ma.init_app(app)
+
+    @app.errorhandler(ValidationError)
+    def validation_error(err):
+        return {"message": err.messages}, 400
 
     app.register_blueprint(db_commands)
     app.register_blueprint(students_bp)
