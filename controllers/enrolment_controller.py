@@ -67,3 +67,28 @@ def delete_enrolment(enrolment_id):
     else:
         # return an error response
         return {"message": f"Enrolment with id {enrolment_id} doesn't exist"}, 404
+
+# Update
+@enrolments_bp.route("/<int:enrolment_id>", methods=["PUT", 'PATCH'])
+def update_enrolment(enrolment_id):
+    try:
+        # find the enrolment to be updated from the db
+        stmt = db.select(Enrolment).filter_by(id=enrolment_id) # id is column from table and enrolment_id is from what we provide
+        # get the data that will update this enrolment - from the request body
+        body_data = request.get_json()
+        enrolment = db.session.scalar(stmt)
+        # if the enrolment exists
+        if enrolment:
+            # update the attribtues of that enrolment
+            enrolment.enrolment_date = body_data.get("enrolment_date") or enrolment.enrolment_date
+            enrolment.student_id = body_data.get("student_id") or enrolment.student_id
+            enrolment.course_id = body_data.get("course_id") or enrolment.course_id
+            # commit
+            db.session.commit()
+            # return the updated enrolment
+            return enrolment_schema.dump(enrolment)
+        else:
+            return {"message": f"Teacher with id {enrolment_id} does not exist"}, 404
+    except IntegrityError as err:
+        if err.orig.pgcode == errorcodes.UNIQUE_VIOLATION:
+            return {"message": err.orig.diag.message_detail}, 409
