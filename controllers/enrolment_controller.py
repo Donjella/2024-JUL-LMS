@@ -34,7 +34,7 @@ def get_enrolment(enrolment_id):
 @enrolments_bp.route("/", methods=["POST"])
 def create_enrolment():
     try:
-        body_data = request.get_json()
+        body_data = enrolment_schema.load(request.get_json())
         new_enrolment = Enrolment(
             student_id=body_data.get("student_id"),
             course_id=body_data.get("course_id"),
@@ -75,7 +75,7 @@ def update_enrolment(enrolment_id):
         # find the enrolment to be updated from the db
         stmt = db.select(Enrolment).filter_by(id=enrolment_id) # id is column from table and enrolment_id is from what we provide
         # get the data that will update this enrolment - from the request body
-        body_data = request.get_json()
+        body_data = enrolment_schema.load(request.get_json(), partial=True)
         enrolment = db.session.scalar(stmt)
         # if the enrolment exists
         if enrolment:
